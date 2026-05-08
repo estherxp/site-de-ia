@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Mente Digital | Assistentes IA</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #05070a;
+            font-family: 'Segoe UI', 'Inter', 'Orbitron', sans-serif;
+            color: #eef5ff;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* Fundo interativo que segue o mouse */
+        .mouse-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: radial-gradient(circle at 20% 30%, #0a0f1a 0%, #03060c 100%);
+            overflow: hidden;
+        }
+
+        .particle-field {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: cyan;
+            border-radius: 50%;
+            opacity: 0.5;
+            pointer-events: none;
+            transition: transform 0.3s ease;
+        }
+
+        .glow-cursor {
+            position: fixed;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(0,255,255,0.12) 0%, rgba(0,255,255,0) 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 999;
+            transition: transform 0.08s ease;
+            filter: blur(25px);
+        }
+
+        .circuit-lines {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                repeating-linear-gradient(90deg, rgba(0, 255, 255, 0.05) 0px, rgba(0, 255, 255, 0.05) 2px, transparent 2px, transparent 100px),
+                repeating-linear-gradient(0deg, rgba(0, 255, 255, 0.05) 0px, rgba(0, 255, 255, 0.05) 2px, transparent 2px, transparent 100px);
+            animation: circuitPulse 8s linear infinite;
+        }
+
+        @keyframes circuitPulse {
+            0%,100%{ opacity:0.3; transform:translate(0,0); }
+            50%{ opacity:0.6; transform:translate(5px,5px); }
+        }
+
+        .glass {
+            background: rgba(10, 20, 30, 0.5);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 28px;
+        }
+
+        button {
+            transition: all 0.25s ease;
+            cursor: pointer;
+        }
+
+        button:hover {
+            box-shadow: 0 0 12px cyan, 0 0 5px rgba(0, 255, 255, 0.6);
+            transform: translateY(-2px);
+        }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(3, 8, 15, 0.95);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(0, 255, 255, 0.4);
+            padding: 1rem 2rem;
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #0ff, #a0f, #f0f);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: logoGlow 3s infinite;
+        }
+
+        @keyframes logoGlow {
+            0%,100%{ filter:drop-shadow(0 0 2px cyan); }
+            50%{ filter:drop-shadow(0 0 10px cyan); }
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            color: #ccf5ff;
+            text-decoration: none;
+            font-weight: 500;
+            transition: 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: cyan;
+            text-shadow: 0 0 4px cyan;
+        }
+
+        .cart-icon {
+            position: relative;
+            font-size: 1.8rem;
+            cursor: pointer;
+            filter: drop-shadow(0 0 2px cyan);
+        }
+
+        .cart-count {
+            position: absolute;
+            top: -8px;
+            right: -12px;
+            background: cyan;
+            color: black;
+            font-size: 0.7rem;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 50%;
+        }
+
+        section {
+            padding: 5rem 2rem;
+            max-width: 1300px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        h2 {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            background: linear-gradient(120deg, #0ff, #b5f);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .cards {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            justify-content: center;
+        }
+
+        .product-card {
+            background: rgba(0, 20, 30, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 2rem;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            padding: 1.8rem;
+            width: 280px;
+            transition: 0.3s;
+        }
+
+        .product-card:hover {
+            border-color: cyan;
+            box-shadow: 0 0 25px rgba(0, 255, 255, 0.4);
+            transform: translateY(-8px) scale(1.02);
+        }
+
+        .product-image {
+            font-size: 4rem;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .product-title {
+            font-size: 1.8rem;
+            text-align: center;
+            margin-bottom: 0.5rem;
+            color: #0ff;
+        }
+
+        .product-desc {
+            font-size: 0.9rem;
+            text-align: center;
+            margin-bottom: 1rem;
+            opacity: 0.8;
+        }
+
+        .product-features {
+            font-size: 0.8rem;
+            margin: 1rem 0;
+            padding-left: 1rem;
+        }
+
+        .price {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #0ff;
+            text-align: center;
+            margin: 1rem 0;
+        }
+
+        .btn {
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid cyan;
+            border-radius: 40px;
+            padding: 0.6rem 1.2rem;
+            font-weight: bold;
+            color: cyan;
+            width: 100%;
+            transition: 0.2s;
+        }
+
+        .cart-sidebar {
+            position: fixed;
+            top: 0;
+            right: -450px;
+            width: 420px;
+            max-width: 90vw;
+            height: 100vh;
+            background: #07121cee;
+            backdrop-filter: blur(24px);
+            border-left: 2px solid cyan;
+            z-index: 200;
+            transition: right 0.4s;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .cart-sidebar.open {
+            right: 0;
+        }
+
+        .cart-item {
+            background: rgba(0, 30, 40, 0.8);
+            border-radius: 1rem;
+            padding: 0.8rem;
+            margin-bottom: 0.8rem;
+        }
+
+        /* Chat melhorado - tamanho ajustado */
+        .chat-container {
+            background: rgba(0, 0, 0, 0.75);
+            border-radius: 2rem;
+            padding: 2rem;
+            border: 1px solid cyan;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .chat-messages {
+            height: 450px;
+            overflow-y: auto;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: rgba(0,0,0,0.4);
+            border-radius: 1rem;
+        }
+
+        .message {
+            margin-bottom: 1rem;
+            padding: 0.8rem 1.2rem;
+            border-radius: 1rem;
+            max-width: 85%;
+            word-wrap: break-word;
+            line-height: 1.4;
+        }
+
+        .user-msg {
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.2), rgba(0, 100, 255, 0.2));
+            margin-left: auto;
+            text-align: right;
+            border: 1px solid cyan;
+        }
+
+        .bot-msg {
+            background: linear-gradient(135deg, rgba(100, 0, 255, 0.2), rgba(0, 50, 150, 0.2));
+            margin-right: auto;
+            border: 1px solid #a0f;
+        }
+
+        .chat-controls {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .chat-controls .btn {
+            width: auto;
+            padding: 0.5rem 1.2rem;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(8px);
+            z-index: 300;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: #0a121f;
+            border-radius: 32px;
+            max-width: 500px;
+            width: 90%;
+            padding: 2rem;
+            border: 1px solid cyan;
+        }
+
+        input, select, textarea {
+            background: #0a1725;
+            border: 1px solid cyan;
+            padding: 0.8rem;
+            border-radius: 20px;
+            width: 100%;
+            color: white;
+            margin-top: 0.3rem;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            border-top: 1px solid rgba(0, 255, 255, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            .nav-container { flex-direction: column; }
+            section { padding: 3rem 1rem; }
+            h2 { font-size: 2rem; }
+            .chat-messages { height: 350px; }
+            .message { max-width: 95%; }
+        }
+
+        .typing-indicator {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: rgba(100, 0, 255, 0.3);
+            border-radius: 1rem;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="mouse-bg">
+        <div class="circuit-lines"></div>
+        <div class="particle-field" id="particleField"></div>
+    </div>
+    <div class="glow-cursor" id="glowCursor"></div>
+
+    <header>
+        <div class="nav-container">
+            <div class="logo">🧠 MENTE DIGITAL</div>
+            <div class="nav-links">
+                <a href="#home">Início</a>
+                <a href="#assistentes">Assistentes</a>
+                <a href="#planos">Planos</a>
+                <a href="#demo">Chat IA</a>
+                <a href="#contato">Contato</a>
+            </div>
+            <div class="cart-icon" id="cartIcon">
+                🛒 <span id="cartCount" class="cart-count">0</span>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section id="home">
+            <div style="text-align: center; padding: 3rem 1rem;">
+                <h1 style="font-size: 3.5rem; background: linear-gradient(135deg,#0ff,#c0f,#f0f); -webkit-background-clip:text; color:transparent;">Assistentes IA<br>Para Sua Mente Digital</h1>
+                <p style="font-size:1.3rem; margin: 1.5rem 0;">Escolha seu assistente virtual e transforme seus estudos e produtividade</p>
+                <button class="btn" id="exploreBtn" style="width: auto; padding: 0.8rem 2rem;">Explorar Assistentes</button>
+            </div>
+        </section>
+
+        <section id="assistentes">
+            <h2>✨ NOSSOS ASSISTENTES ✨</h2>
+            <div class="cards" id="productsContainer"></div>
+        </section>
+
+        <section id="planos">
+            <h2>💰 PLANOS MENSAIS</h2>
+            <div class="cards" id="plansContainer"></div>
+        </section>
+
+        <section id="demo">
+            <h2>🤖 CONVERSE COM NOSSA IA</h2>
+            <div class="chat-container">
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message bot-msg">🤖 Olá! Eu sou a assistente da Mente Digital. Posso te ajudar a escolher o melhor assistente para seus estudos, trabalho ou criatividade! ❤️</div>
+                    <div class="message bot-msg">💡 Dica: Me pergunte sobre "melhor para estudos", "qual comprar", ou "diferença entre os assistentes"!</div>
+                </div>
+                <div style="display:flex; gap:0.8rem;">
+                    <input type="text" id="chatInput" placeholder="Digite sua mensagem..." style="flex:1; font-size:1rem;">
+                    <button id="sendChatBtn" class="btn" style="width: auto; padding: 0.8rem 1.5rem;">Enviar 📨</button>
+                </div>
+                <div class="chat-controls">
+                    <button id="clearChatBtn" class="btn">🗑️ Limpar Chat</button>
+                    <span style="flex:1; text-align: right; opacity:0.7;">🤖 IA Online</span>
+                </div>
+            </div>
+        </section>
+
+        <section id="contato">
+            <h2>📩 FALE CONOSCO</h2>
+            <div class="glass" style="max-width:500px; margin:0 auto; padding:2rem;">
+                <form id="contactForm">
+                    <input type="text" placeholder="Nome" id="contactName" required><br><br>
+                    <input type="email" placeholder="Email" id="contactEmail" required><br><br>
+                    <textarea placeholder="Mensagem" rows="3" id="contactMsg" required></textarea><br><br>
+                    <button type="submit" class="btn">Enviar Mensagem</button>
+                    <p id="contactFeedback" style="margin-top:1rem; color:cyan;"></p>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>© 2025 Mente Digital • Inteligência Artificial para o Futuro</p>
+        <p style="margin-top:0.5rem;">📡 Instagram | Twitter | LinkedIn (fictício)</p>
+    </footer>
+
+    <div id="cartSidebar" class="cart-sidebar">
+        <div style="display:flex; justify-content:space-between;"><h3>🛒 Seu Carrinho</h3><button id="closeCartBtn" style="background:none; border:none; color:cyan; font-size:1.5rem;">✖</button></div>
+        <div id="cartItemsList" style="flex:1; overflow-y:auto;"></div>
+        <div><h4>Total: <span id="cartTotal">R$ 0</span></h4></div>
+        <button id="checkoutBtn" class="btn" style="background:cyan; color:black;">Finalizar Compra</button>
+    </div>
+
+    <div id="checkoutModal" class="modal">
+        <div class="modal-content">
+            <h3>💳 Checkout</h3>
+            <form id="checkoutForm">
+                <input type="text" id="fullName" placeholder="Nome completo" required><br><br>
+                <input type="email" id="emailCheckout" placeholder="Email" required><br><br>
+                <input type="tel" id="phone" placeholder="Telefone" required><br><br>
+                <input type="text" id="address" placeholder="Endereço" required><br><br>
+                <select id="paymentMethod">
+                    <option>Cartão de Crédito</option>
+                    <option>PIX</option>
+                    <option>Cripto</option>
+                </select><br><br>
+                <button type="submit" class="btn">Confirmar</button>
+                <button type="button" id="closeModalBtn" class="btn" style="margin-left:1rem;">Cancelar</button>
+            </form>
+            <div id="checkoutMessage"></div>
+        </div>
+    </div>
+
+    <div id="successModal" class="modal">
+        <div class="modal-content">
+            <h3 style="color:#0f0;">✅ Compra realizada!</h3>
+            <p id="successDetails"></p>
+            <button id="closeSuccessBtn" class="btn">Fechar</button>
+        </div>
+    </div>
+
+    <script>
+        // ========== PRODUTOS (ASSISTENTES) ==========
+        const products = [
+            { id: 1, name: "NOVA MIND", desc: "Assistente Pessoal de Produtividade", features: "✓ Agenda inteligente\n✓ Lembretes adaptativos\n✓ Foco profundo para estudos", price: 299, emoji: "🧠", foco: "estudos, produtividade, organização" },
+            { id: 2, name: "ORION PRO", desc: "Assistente Empresarial", features: "✓ Análise de dados\n✓ Automação de tarefas\n✓ Relatórios automáticos", price: 599, emoji: "🏢", foco: "empresas, dados, automação" },
+            { id: 3, name: "LYRA ART", desc: "Assistente Criativo", features: "✓ Geração de ideias\n✓ Criação de conteúdo\n✓ Brainstorming IA", price: 399, emoji: "🎨", foco: "criatividade, conteúdo, artes" },
+            { id: 4, name: "VEGA LAB", desc: "Assistente Científico", features: "✓ Pesquisa avançada\n✓ Simulações\n✓ Descobertas científicas", price: 499, emoji: "🔬", foco: "ciência, pesquisa, laboratório" },
+            { id: 5, name: "ATLAS MAX", desc: "Assistente Estratégico", features: "✓ Planejamento\n✓ Análise de riscos\n✓ Decisões C-level", price: 799, emoji: "📊", foco: "estratégia, decisões, liderança" }
+        ];
+
+        const plans = [
+            { name: "ESSENTIAL", price: 49, benefits: "✓ 1 assistente\n✓ Suporte básico\n✓ Chat 24/7" },
+            { name: "PRO", price: 99, benefits: "✓ 3 assistentes\n✓ Suporte prioritário\n✓ Integrações API\n✓ Análises avançadas" },
+            { name: "ULTRA", price: 199, benefits: "✓ Todos assistentes\n✓ IA offline\n✓ API dedicada\n✓ Consultoria exclusiva" }
+        ];
+
+        let cart = [];
+
+        function saveCart() { localStorage.setItem("menteDigitalCart", JSON.stringify(cart)); updateCartUI(); }
+        function loadCart() { const stored = localStorage.getItem("menteDigitalCart"); cart = stored ? JSON.parse(stored) : []; updateCartUI(); }
+        
+        function updateCartUI() {
+            const count = cart.reduce((a,i) => a + i.quantity, 0);
+            document.getElementById('cartCount').innerText = count;
+            const container = document.getElementById('cartItemsList');
+            if(cart.length === 0) { container.innerHTML = "<p style='text-align:center;'>🛒 Carrinho vazio</p>"; }
+            else {
+                container.innerHTML = cart.map(item => `
+                    <div class="cart-item">
+                        <strong>${item.name}</strong><br>
+                        R$ ${item.price}<br>
+                        Qtd: <input type="number" min="1" value="${item.quantity}" data-id="${item.id}" class="cart-qty" style="width:60px;">
+                        <button class="removeItemBtn" data-id="${item.id}" style="background:rgba(255,0,0,0.3); border:1px solid red; border-radius:20px; padding:2px 8px;">Remover</button>
+                        <div>Subtotal: R$ ${(item.price * item.quantity).toFixed(2)}</div>
+                    </div>
+                `).join('');
+                document.querySelectorAll('.cart-qty').forEach(inp => inp.addEventListener('change', (e) => updateQuantity(parseInt(e.target.dataset.id), parseInt(e.target.value))));
+                document.querySelectorAll('.removeItemBtn').forEach(btn => btn.addEventListener('click', (e) => removeFromCart(parseInt(btn.dataset.id))));
+            }
+            const total = cart.reduce((s,i) => s + (i.price * i.quantity), 0);
+            document.getElementById('cartTotal').innerText = `R$ ${total.toFixed(2)}`;
+        }
+
+        function addToCart(product) {
+            const existing = cart.find(i => i.id === product.id);
+            if(existing) existing.quantity++;
+            else cart.push({ id: product.id, name: product.name, price: product.price, quantity: 1 });
+            saveCart();
+            showToast(`✅ ${product.name} adicionado ao carrinho!`);
+        }
+
+        function addPlanToCart(plan) {
+            const planProduct = { id: 100 + plans.indexOf(plan), name: `Plano ${plan.name} (Mensal)`, price: plan.price };
+            addToCart(planProduct);
+        }
+
+        function updateQuantity(id, qty) { const idx = cart.findIndex(i => i.id === id); if(idx !== -1) { cart[idx].quantity = qty; if(cart[idx].quantity <= 0) cart.splice(idx,1); saveCart(); } }
+        function removeFromCart(id) { cart = cart.filter(i => i.id !== id); saveCart(); }
+        function showToast(msg) { let t = document.createElement('div'); t.innerText = msg; t.style.cssText = 'position:fixed;bottom:20px;left:20px;background:#0ff;color:#000;padding:0.7rem 1.2rem;border-radius:30px;z-index:999;font-weight:bold;'; document.body.appendChild(t); setTimeout(()=>t.remove(),2000); }
+
+        function renderProducts() {
+            const container = document.getElementById('productsContainer');
+            container.innerHTML = products.map(p => `
+                <div class="product-card">
+                    <div class="product-image">${p.emoji}</div>
+                    <div class="product-title">${p.name}</div>
+                    <div class="product-desc">${p.desc}</div>
+                    <div class="product-features">${p.features.replace(/\n/g, '<br>')}</div>
+                    <div class="price">R$ ${p.price}</div>
+                    <button class="btn addToCartBtn" data-id="${p.id}">🛒 COMPRAR AGORA</button>
+                </div>
+            `).join('');
+            document.querySelectorAll('.addToCartBtn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); addToCart(products.find(p => p.id === parseInt(btn.dataset.id))); }));
+        }
+
+        function renderPlans() {
+            const container = document.getElementById('plansContainer');
+            container.innerHTML = plans.map(p => `
+                <div class="product-card">
+                    <div class="product-title">${p.name}</div>
+                    <div class="price">R$ ${p.price}<span style="font-size:0.9rem;">/mês</span></div>
+                    <div class="product-features">${p.benefits.replace(/\n/g, '<br>')}</div>
+                    <button class="btn planSubscribeBtn" data-plan="${p.name}">📅 ASSINAR MENSAL</button>
+                </div>
+            `).join('');
+            document.querySelectorAll('.planSubscribeBtn').forEach(btn => btn.addEventListener('click', (e) => { const plan = plans.find(p => p.name === btn.dataset.plan); if(plan) addPlanToCart(plan); }));
+        }
+
+        // ========== CHAT IA INTELIGENTE E CONTEXTUAL ==========
+        const chatMessages = document.getElementById('chatMessages');
+        
+        function addMessage(text, isUser) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${isUser ? 'user-msg' : 'bot-msg'}`;
+            msgDiv.innerHTML = `${isUser ? '👤 ' : '🤖 '}${text}`;
+            chatMessages.appendChild(msgDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function addTypingIndicator() {
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'typing-indicator';
+            typingDiv.id = 'typingIndicator';
+            typingDiv.innerHTML = '🤖 Digitando...';
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function removeTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            if(indicator) indicator.remove();
+        }
+
+        function getAIResponse(userMessage) {
+            const msg = userMessage.toLowerCase();
+            
+            // RESPOSTAS ESPECÍFICAS E CONTEXTUAIS SOBRE OS PRODUTOS
+            
+            // Perguntas sobre ESTUDOS
+            if (msg.includes('estudo') || msg.includes('estudar') || msg.includes('aprender') || msg.includes('faculdade') || msg.includes('escola')) {
+                return "📚 Para ESTUDOS, eu recomendo o **NOVA MIND** (R$299)! 🎯\n\n✅ Por que ele é o melhor:\n• Agenda inteligente para organizar seus horários de estudo\n• Lembretes adaptativos para revisões\n• Técnicas de foco profundo (Pomodoro integrado)\n• Resumos automáticos de conteúdos\n\n💡 Quer adquirir o NOVA MIND agora mesmo? É só clicar em COMPRAR na seção de Assistentes! Também temos planos mensais a partir de R$49/mês.";
+            }
+            
+            // Perguntas sobre QUAL COMPRAR / RECOMENDAÇÃO
+            if (msg.includes('qual comprar') || msg.includes('melhor') || msg.includes('recomenda') || msg.includes('sugere') || msg.includes('indica')) {
+                return "🎯 **Minhas recomendações por necessidade:**\n\n📚 **Para ESTUDOS** → NOVA MIND (R$299)\n💼 **Para TRABALHO** → ORION PRO (R$599)\n🎨 **Para CRIATIVIDADE** → LYRA ART (R$399)\n🔬 **Para PESQUISA** → VEGA LAB (R$499)\n📊 **Para ESTRATÉGIA** → ATLAS MAX (R$799)\n\n💰 Ou escolha um plano mensal (R$49 a R$199) e tenha acesso a vários assistentes!";
+            }
+            
+            // Perguntas sobre DIFERENÇAS
+            if (msg.includes('diferença') || msg.includes('comparar') || msg.includes('qual a diferença')) {
+                return "🔍 **Diferenças entre os assistentes:**\n\n• **NOVA MIND** (R$299) → Foco em produtividade e organização pessoal/estudos\n• **ORION PRO** (R$599) → Para empresas, análise de dados e automação\n• **LYRA ART** (R$399) → Criatividade, conteúdo e brainstorm\n• **VEGA LAB** (R$499) → Pesquisa científica e simulações\n• **ATLAS MAX** (R$799) → Estratégia, decisões e planejamento avançado\n\n💡 Todos podem ser adquiridos individualmente ou via assinatura mensal!";
+            }
+            
+            // Perguntas sobre PREÇOS
+            if (msg.includes('preço') || msg.includes('quanto custa') || msg.includes('valor') || msg.includes('custa')) {
+                return "💰 **Tabela de Preços:**\n\n🛒 **COMPRA AVULSA (vitalícia):**\n• NOVA MIND: R$299\n• ORION PRO: R$599\n• LYRA ART: R$399\n• VEGA LAB: R$499\n• ATLAS MAX: R$799\n\n📅 **ASSINATURA MENSAL:**\n• ESSENTIAL: R$49/mês (1 assistente)\n• PRO: R$99/mês (3 assistentes)\n• ULTRA: R$199/mês (todos assistentes)\n\nQual opção te interessa mais?";
+            }
+            
+            // Perguntas sobre FUNCIONAMENTO
+            if (msg.includes('funciona') || msg.includes('como usar') || msg.includes('instalar')) {
+                return "⚙️ **Como funciona:**\n\n1️⃣ Escolha seu assistente na seção \"Assistentes\"\n2️⃣ Clique em COMPRAR e adicione ao carrinho\n3️⃣ Finalize a compra no checkout\n4️⃣ Você receberá acesso imediato por email\n\n💡 Também temos planos mensais com acesso a múltiplos assistentes!\n\nQuer ajuda para escolher o melhor para você? Me diga o que você precisa!";
+            }
+            
+            // Perguntas sobre GARANTIA
+            if (msg.includes('garantia') || msg.includes('suporte') || msg.includes('segurança')) {
+                return "🔒 **Garantia e Suporte:**\n\n✅ Garantia de 30 dias (reembolso integral se não gostar)\n✅ Suporte 24/7 por chat e email\n✅ Atualizações gratuitas vitalícias\n✅ 100% seguro e criptografado\n\nPode comprar tranquilo! Confiamos nos nossos produtos. 😊";
+            }
+            
+            // Perguntas sobre TRABALHO / EMPRESA
+            if (msg.includes('trabalho') || msg.includes('empresa') || msg.includes('negócio') || msg.includes('business')) {
+                return "💼 **Para trabalho/empresas, recomendo:**\n\n• **ORION PRO** (R$599) - Automação e análise de dados\n• **ATLAS MAX** (R$799) - Estratégia e decisões\n\n🏢 **Planos empresariais:**\n• PRO: R$99/mês (3 assistentes)\n• ULTRA: R$199/mês (todos assistentes)\n\nPrecisa de uma cotação personalizada para sua equipe? Fale conosco pelo formulário de contato!";
+            }
+            
+            // Pergunta sobre NOVA MIND específico
+            if (msg.includes('nova mind') || (msg.includes('nova') && msg.includes('assistente'))) {
+                return "🧠 **NOVA MIND - R$299**\n\n✅ **Recursos:**\n• Agenda inteligente para estudos\n• Lembretes adaptativos\n• Técnicas de foco profundo\n• Organização pessoal completa\n\n🎯 **Perfeito para:** Estudantes, profissionais que precisam de organização, e quem busca produtividade máxima.\n\n💡 Quer adicionar ao carrinho? Clique no botão COMPRAR na seção de Assistentes!";
+            }
+            
+            // Pergunta sobre ORION PRO
+            if (msg.includes('orion pro') || msg.includes('orion')) {
+                return "🏢 **ORION PRO - R$599**\n\n✅ **Recursos:**\n• Análise de dados avançada\n• Automação de tarefas repetitivas\n• Relatórios automáticos\n• Integração com APIs\n\n🎯 **Perfeito para:** Empresas, gestores, e quem precisa de automação inteligente.\n\n💡 Clique em COMPRAR na seção de Assistentes para adquirir!";
+            }
+            
+            // Pergunta sobre LYRA ART
+            if (msg.includes('lyra art') || msg.includes('lyra') || msg.includes('criativo')) {
+                return "🎨 **LYRA ART - R$399**\n\n✅ **Recursos:**\n• Geração de ideias criativas\n• Criação de conteúdo\n• Brainstorming assistido por IA\n• Inspiração artística\n\n🎯 **Perfeito para:** Criadores de conteúdo, artistas, redatores, e mentes criativas!";
+            }
+            
+            // Pergunta sobre VEGA LAB
+            if (msg.includes('vega lab') || msg.includes('vega')) {
+                return "🔬 **VEGA LAB - R$499**\n\n✅ **Recursos:**\n• Pesquisa científica avançada\n• Simulações e modelagem\n• Análise de papers\n• Descobertas assistidas\n\n🎯 **Perfeito para:** Pesquisadores, cientistas, estudantes de pós-graduação!";
+            }
+            
+            // Pergunta sobre ATLAS MAX
+            if (msg.includes('atlas max') || msg.includes('atlas')) {
+                return "📊 **ATLAS MAX - R$799**\n\n✅ **Recursos:**\n• Planejamento estratégico\n• Análise de riscos\n• Decisões C-level\n• Previsão de cenários\n\n🎯 **Perfeito para:** Executivos, diretores, consultores estratégicos!";
+            }
+            
+            // Perguntas sobre PLANOS
+            if (msg.includes('plano') || msg.includes('assinatura') || msg.includes('mensal')) {
+                return "📅 **Planos Mensais:**\n\n🔹 **ESSENTIAL - R$49/mês**\n• 1 assistente à sua escolha\n• Suporte básico 24/7\n\n🔹 **PRO - R$99/mês**\n• 3 assistentes\n• Suporte prioritário\n• Integrações API\n• Análises avançadas\n\n🔹 **ULTRA - R$199/mês**\n• Todos os 5 assistentes\n• IA offline\n• API dedicada\n• Consultoria exclusiva\n\n💡 Vale super a pena! Qual te interessa?";
+            }
+            
+            // Saudação
+            if (msg.includes('oi') || msg.includes('olá') || msg.includes('opa') || msg.includes('bom dia') || msg.includes('boa tarde') || msg.includes('boa noite')) {
+                return "Olá! 👋 Seja bem-vindo à Mente Digital!\n\n💰 **Posso ajudar você a escolher o melhor assistente para:**\n📚 ESTUDOS\n💼 TRABALHO\n🎨 CRIATIVIDADE\n🔬 PESQUISA CIENTÍFICA\n📊 ESTRATÉGIA\n\nMe pergunte qualquer coisa! 😊";
+            }
+            
+            // Resposta padrão inteligente
+            return "❓ **Desculpe, não entendi completamente sua pergunta.**\n\n💡 **Tente perguntar sobre:**\n• \"Melhor para estudos\"\n• \"Qual comprar\"\n• \"Diferença entre assistentes\"\n• \"Preços\"\n• \"NOVA MIND\"\n• \"Planos mensais\"\n\n🔍 Ou me diga qual assistente você quer conhecer melhor: NOVA MIND, ORION PRO, LYRA ART, VEGA LAB ou ATLAS MAX!";
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const msg = input.value.trim();
+            if (!msg) return;
+            
+            addMessage(msg, true);
+            input.value = "";
+            input.disabled = true;
+            
+            addTypingIndicator();
+            
+            setTimeout(() => {
+                removeTypingIndicator();
+                const response = getAIResponse(msg);
+                addMessage(response, false);
+                input.disabled = false;
+                input.focus();
+            }, 800);
+        }
+
+        // Eventos do chat
+        document.getElementById('sendChatBtn').addEventListener('click', sendMessage);
+        document.getElementById('chatInput').addEventListener('keypress', (e) => { if(e.key === 'Enter') sendMessage(); });
+        document.getElementById('clearChatBtn').addEventListener('click', () => { 
+            chatMessages.innerHTML = '<div class="message bot-msg">🤖 Chat limpo! Como posso ajudar você hoje?</div><div class="message bot-msg">💡 Dicas: me pergunte sobre "melhor para estudos", "qual comprar", ou "diferença entre os assistentes"!</div>';
+        });
+
+        // Eventos de UI
+        document.getElementById('cartIcon').addEventListener('click', () => document.getElementById('cartSidebar').classList.add('open'));
+        document.getElementById('closeCartBtn').addEventListener('click', () => document.getElementById('cartSidebar').classList.remove('open'));
+        
+        document.getElementById('checkoutBtn').addEventListener('click', () => {
+            if(cart.length === 0) { showToast("Carrinho vazio!"); return; }
+            document.getElementById('cartSidebar').classList.remove('open');
+            document.getElementById('checkoutModal').style.display = 'flex';
+        });
+
+        document.getElementById('checkoutForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('fullName').value.trim();
+            const email = document.getElementById('emailCheckout').value.trim();
+            if(!name || !email) { document.getElementById('checkoutMessage').innerHTML = "<span style='color:orange'>Preencha os campos!</span>"; return; }
+            const orderId = 'MD-' + Math.floor(Math.random() * 1000000);
+            const total = cart.reduce((s,i) => s + (i.price * i.quantity), 0);
+            document.getElementById('checkoutModal').style.display = 'none';
+            document.getElementById('successDetails').innerHTML = `🎉 Pedido #${orderId}<br>Total: R$ ${total.toFixed(2)}<br>Confirmação enviada para ${email}`;
+            document.getElementById('successModal').style.display = 'flex';
+            cart = [];
+            saveCart();
+            e.target.reset();
+        });
+        
+        document.getElementById('closeModalBtn').addEventListener('click', () => document.getElementById('checkoutModal').style.display = 'none');
+        document.getElementById('closeSuccessBtn').addEventListener('click', () => document.getElementById('successModal').style.display = 'none');
+        document.getElementById('contactForm').addEventListener('submit', (e) => { e.preventDefault(); document.getElementById('contactFeedback').innerText = "📨 Mensagem enviada!"; e.target.reset(); });
+        document.getElementById('exploreBtn').addEventListener('click', () => document.getElementById('assistentes').scrollIntoView({behavior:'smooth'}));
+        
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', (e) => { e.preventDefault(); document.getElementById(link.getAttribute('href').slice(1)).scrollIntoView({behavior:'smooth'}); });
+        });
+
+        // Fundo interativo
+        const particleField = document.getElementById('particleField');
+        const glowCursor = document.getElementById('glowCursor');
+        
+        for(let i = 0; i < 150; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.top = Math.random() * 100 + '%';
+            particle.style.animation = `floatRobot ${5 + Math.random() * 10}s infinite`;
+            particleField.appendChild(particle);
+        }
+        
+        document.addEventListener('mousemove', (e) => {
+            glowCursor.style.left = e.clientX - 200 + 'px';
+            glowCursor.style.top = e.clientY - 200 + 'px';
+            
+            document.querySelectorAll('.particle').forEach(p => {
+                const rect = p.getBoundingClientRect();
+                const dx = rect.left + 2 - e.clientX;
+                const dy = rect.top + 2 - e.clientY;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                if(dist < 120) {
+                    const angle = Math.atan2(dy, dx);
+                    const force = (120 - dist) / 12;
+                    p.style.transform = `translate(${Math.cos(angle) * force}px, ${Math.sin(angle) * force}px)`;
+                } else {
+                    p.style.transform = 'translate(0,0)';
+                }
+            });
+        });
+
+        renderProducts();
+        renderPlans();
+        loadCart();
+    </script>
+</body>
+</html>
